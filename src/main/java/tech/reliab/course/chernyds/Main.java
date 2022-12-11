@@ -3,9 +3,11 @@ package tech.reliab.course.chernyds;
 import tech.reliab.course.chernyds.bank.entity.Bank;
 import tech.reliab.course.chernyds.bank.service.*;
 import tech.reliab.course.chernyds.bank.service.impl.*;
+import tech.reliab.course.chernyds.bank.entity.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,8 +19,10 @@ public class Main {
         UserService userService = UserServiceImpl.getInstance();
         PaymentAccountService paymentAccountService = PaymentAccountServiceImpl.getInstance();
         CreditAccountService creditAccountService = CreditAccountServiceImpl.getInstance();
-        ArrayList <Bank> banks = new ArrayList<Bank>();
-        //Создание сущьностей
+
+        List<Bank> bankList = new ArrayList<>();
+
+        //Создание сущностей
         for(int numBunk=0; numBunk<5; numBunk++){
             var bank = bankService.create("Bank"+(numBunk+1));
             for(int numOffice=0; numOffice<3; numOffice++){
@@ -28,45 +32,40 @@ public class Main {
                         "Address",
                         1000.
                 );
-
                 for(int numEmpl=0; numEmpl<5; numEmpl++){
                     var employee = employeeService.create(
                             "denis",
                             "cherny",
                             LocalDate.now(),
-                            "engener",
+                            "engineer",
                             bank,
                             office,
                             10000.
                     );
-
                 }
             }
             for(int numAtm=0; numAtm<3; numAtm++){
                 var atm = atmService.create(
                         "atm"+(numAtm+1),
                         bank,
-                        bank.getListOfOffices().stream().findFirst().get(),
-                        bank.getListOfEmployees().stream().findFirst().get(),
+                        bank.getOffices().stream().findFirst().get(),
+                        bank.getEmployees().stream().findFirst().get(),
                         100.
-                        );
-
+                );
             }
             for(int numUser=0; numUser<5; numUser++){
                 var user = userService.create(
-                        "user" + numBunk + "."+numUser,
-                        "resu" + numBunk + "."+numUser,
+                        "user",
+                        "user",
                         LocalDate.now(),
-                        "job",
-                        bank
-                        );
-
+                        "job"
+                );
+                bankService.addUser(bank, user);
                 for(int numPay=0; numPay<2; numPay++){
                     var paymentAccount = paymentAccountService.create(
                             user,
-                            bank.getName()
+                            bank
                     );
-                    userService.addPaymentAccount(user, paymentAccount);
                     var credit = creditAccountService.create(
                             user,
                             bank,
@@ -75,17 +74,19 @@ public class Main {
                             12,
                             100000.,
                             1000.,
-                            bank.getListOfEmployees().get(1),
+                            bank.getEmployees().stream().findFirst().get(),
                             paymentAccount
                     );
-                    userService.addCreditAccout(user, credit);
                 }
             }
-            banks.add(bank);
+            bankList.add(bank);
         }
-        //Вывод информации по всем банкам
-        for(var bank : banks){
-            bankService.outputBankInfo(bank);
-        }
+
+        User user = userService.create("Test", "User", LocalDate.now(), "job");
+
+        bankService.getCredit(bankList, user);
+
+        userService.outputUserInfo(user);
+
     }
 }
