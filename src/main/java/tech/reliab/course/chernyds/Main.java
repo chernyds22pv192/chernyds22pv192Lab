@@ -1,10 +1,11 @@
 package tech.reliab.course.chernyds;
 
 import tech.reliab.course.chernyds.bank.entity.Bank;
+import tech.reliab.course.chernyds.bank.entity.User;
 import tech.reliab.course.chernyds.bank.service.*;
 import tech.reliab.course.chernyds.bank.service.impl.*;
-import tech.reliab.course.chernyds.bank.entity.User;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class Main {
 
         List<Bank> bankList = new ArrayList<>();
 
-        //Создание сущностей
+        //Создание сущьностей
         for(int numBunk=0; numBunk<5; numBunk++){
             var bank = bankService.create("Bank"+(numBunk+1));
             for(int numOffice=0; numOffice<3; numOffice++){
@@ -82,11 +83,14 @@ public class Main {
             bankList.add(bank);
         }
 
-        User user = userService.create("Test", "User", LocalDate.now(), "job");
 
-        bankService.getCredit(bankList, user);
-
-        userService.outputUserInfo(user);
+        try{
+            bankService.exportBankAccounts(bankList.get(0), "./test.txt");
+            bankService.importBankAccounts(bankList.get(1), "./test.txt");
+        }catch (IOException e){
+            System.out.println(e);
+        }
+        bankService.outputBankInfo(bankList.get(1));
 
     }
 }
